@@ -14,7 +14,7 @@
 # Backup and purge script for MySQL.                                           #
 #                                                                              #
 # reimlima@gmail.com                                                           #
-# $Id: dbdump,v 2 2015/02/20 reimlima Exp reimlima $                           #
+# $Id: dbdump,v 2 2015/02/21 reimlima Exp reimlima $                           #
 #                                                                              #
 #[ License ]-------------------------------------------------------------------#
 #                                                                              #
