@@ -12,7 +12,6 @@
 #                                                                              #
 # EN:                                                                          #
 # Backup and purge script for MySQL.                                           #
-# in dbdump.conf file.                                                         #
 #                                                                              #
 # reimlima@gmail.com                                                           #
 # $Id: dbdump,v 2 2015/02/20 reimlima Exp reimlima $                           #
@@ -80,10 +79,10 @@
 
 #[ Variables ]-----------------------------------------------------------------#
 
+DEBUG=0
 FIND=$(which find)
 DATE=$(which date)
 GZIP=$(which gzip)
-GREP=$(which grep)
 SCRIPTNAME=$(basename $0)
 MYSQLDUMP=$(which mysqldump)
 DUMPDATE=$($DATE '+%Y%m%d%H%M')
@@ -99,37 +98,42 @@ mkfifo $FIFOFILE &> /dev/null
 
 trapfunction(){
 
-        # Function called by 'trap' command. Only removes lock
-        # file if the process PID was the same in the file.
+	# Function called by 'trap' command. Only removes lock
+	# file if the process PID was the same in the file.
 
-        PIDOFMYSELF=$$
-        PIDINLOCKFILE=$(cat $LOCKFILE)
-        if [ "$PIDOFMYSELF" == "$PIDINLOCKFILE" ] ; then
-                rm $LOCKFILE
-        else
-                echo
-                echo "PID: $PIDINLOCKFILE"
-                echo
-        fi
+	PIDOFMYSELF=$$
+	PIDINLOCKFILE=$(cat $LOCKFILE)
+	if [ "$PIDOFMYSELF" == "$PIDINLOCKFILE" ] ; then
+		rm $LOCKFILE
+	else
+		echo
+		echo "PID: $PIDINLOCKFILE"
+		echo
+	fi
+	
 }
 
 trap trapfunction 0 1 2 3 9 15
 
 exiterrorfunc(){
 
-        # Generic output function, show the message given,
-        # and then exits with the given code.
+	# Generic output function, show the message given,
+	# and then exits with the given code.
 
-        # Parse message and exit code
-        EXITCODE=$(echo $@ | awk '{print $NF}')
-        EXITMESSAGE=$(echo $@ | awk '{ $NF = ""; print $0}')
-        echo
-        echo $EXITMESSAGE
-        echo
-        exit $EXITCODE
+	# Parse message and exit code
+	EXITCODE=$(echo $@ | awk '{print $NF}')
+	EXITMESSAGE=$(echo $@ | awk '{ $NF = ""; print $0}')
+	[ $DEBUG -eq 1 ] && echo $EXITMESSAGE
+	echo $EXITMESSAGE >> $DBDUMPLOG
+	exit $EXITCODE
+	
 }
 
 dataDump(){
+	
+	# Execute database dump and then compress the created file
+	# using options given in the dbdump.conf file
+	
 	if [[ $DBARRAY = "" ]] ; then
 		DUMPINFO="Executing backup of All Databases"
 		DBARRAY="--all-databases"
@@ -137,26 +141,38 @@ dataDump(){
 		DUMPINFO="Executing backup of $DBARRAY Databases"
 		DBARRAY="--databases $DBARRAY"
 	fi
-	echo "[ $(date +%m/%d/%Y\ %H:%M:%S) ] - $DUMPINFO" >> $DBDUMPLOG
+	echo "[ $($DATE +%m/%d/%Y\ %H:%M:%S) ] - $DUMPINFO" >> $DBDUMPLOG
+	[ $DEBUG -eq 1 ] && echo "[ $($DATE +%m/%d/%Y\ %H:%M:%S) ] - $DUMPINFO"
 	echo "$MYSQLDUMP -u $DBUSER -p$DBPASSWORD $DBARRAY >> $DUMPPATH/$DUMPFILENAME.$DUMPDATE.sql"
 	wait
 	echo "$GZIP -9 $DUMPPATH/$DUMPFILENAME.$DUMPDATE.sql"
 	return
+	
 }
 
 dataPurge(){
-	echo "[ $(date +%m/%d/%Y\ %H:%M:%S) ] - Removing files older than $DUMPRETENTION day" >> $DBDUMPLOG
-	$FIND $DUMPPATH/*.gz -type f -mtime +$DUMPRETENTION  -exec rm -vf {} \;
+	
+	# Automatic purge old files older than "DUMPRETENTION"
+	# option in dbdump.conf
+	
+	echo "[ $($DATE +%m/%d/%Y\ %H:%M:%S) ] - Removing files older than $DUMPRETENTION day" >> $DBDUMPLOG
+	[ $DEBUG -eq 1 ] && echo "[ $($DATE +%m/%d/%Y\ %H:%M:%S) ] - Removing files older than $DUMPRETENTION day"
+	echo "$FIND $DUMPPATH/*.gz -type f -mtime +$DUMPRETENTION  -exec rm -vf {} \;"
 	return
+	
 }
 
 executionFlow(){
+	
+	# Makes the script orchestration
+	
 	dataDump
 	[ $? -eq 0 ] || exiterrorfunc "Something went wrong with DB dump, check $DUMPPATH 1"
 	wait
 	dataPurge
 	[ $? -eq 0 ] || exiterrorfunc "Something went wrong with Data Purge, check $DUMPPATH 1"
 	exiterrorfunc "All Operations were done successfully 0"
+	
 }
 
 #[ Load conf file ]------------------------------------------------------------#
@@ -176,8 +192,14 @@ else
         echo "$$" > $LOCKFILE
 fi
 
-[ $1 ] && [ `echo $1 | sed '/-d/!d'` ] && unset DBDUMPLOG
-
-[ $DBDUMPLOG ] && echo "--------------------------------------" >> $DBDUMPLOG
-
-executionFlow
+# Validate command line option
+if [[ $1 = "" ]] ; then
+	echo "--------------------------------------" >> $DBDUMPLOG
+	executionFlow
+elif [ `echo $1 | sed '/-d/!d'` ] ; then
+	DEBUG=1
+	echo "--------------------------------------" >> $DBDUMPLOG
+	executionFlow
+else
+	exiterrorfunc "USAGE: Only use \"$SCRIPTNAME -d\" for debug 1"
+fi

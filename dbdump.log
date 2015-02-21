@@ -1,9 +1,1 @@
------------------------------------------
-Executing backup of zabbix nagios cacti Databases
-Removing files older than 5 day
---------------------------------------
-[ 02/20/2015 21:28:14 ] - Executing backup of zabbix nagios cacti Databases
-[ 02/20/2015 21:28:14 ] - Removing files older than 5 day
---------------------------------------
-[ 02/20/2015 21:28:45 ] - Executing backup of zabbix nagios cacti Databases
-[ 02/20/2015 21:28:45 ] - Removing files older than 5 day
+
