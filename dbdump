@@ -143,9 +143,9 @@ dataDump(){
 	fi
 	echo "[ $($DATE +%m/%d/%Y\ %H:%M:%S) ] - $DUMPINFO" >> $DBDUMPLOG
 	[ $DEBUG -eq 1 ] && echo "[ $($DATE +%m/%d/%Y\ %H:%M:%S) ] - $DUMPINFO"
-	echo "$MYSQLDUMP -u $DBUSER -p$DBPASSWORD $DBARRAY >> $DUMPPATH/$DUMPFILENAME.$DUMPDATE.sql"
+	$MYSQLDUMP -u $DBUSER -p$DBPASSWORD $DBARRAY >> $DUMPPATH/$DUMPFILENAME.$DUMPDATE.sql
 	wait
-	echo "$GZIP -9 $DUMPPATH/$DUMPFILENAME.$DUMPDATE.sql"
+	$GZIP -9 $DUMPPATH/$DUMPFILENAME.$DUMPDATE.sql
 	return
 	
 }
@@ -157,7 +157,7 @@ dataPurge(){
 	
 	echo "[ $($DATE +%m/%d/%Y\ %H:%M:%S) ] - Removing files older than $DUMPRETENTION day" >> $DBDUMPLOG
 	[ $DEBUG -eq 1 ] && echo "[ $($DATE +%m/%d/%Y\ %H:%M:%S) ] - Removing files older than $DUMPRETENTION day"
-	echo "$FIND $DUMPPATH/*.gz -type f -mtime +$DUMPRETENTION  -exec rm -vf {} \;"
+	$FIND $DUMPPATH/*.gz -type f -mtime +$DUMPRETENTION  -exec rm -vf {} \;
 	return
 	
 }
@@ -180,7 +180,7 @@ executionFlow(){
 if [ -e $SCRIPTCONFFILE ] ; then
         source $SCRIPTCONFFILE
 else
-        exiterrorfunc "ERROR: dbdump.conf file not found 1"
+        exiterrorfunc "ERROR: $SCRIPTCONFFILE file not found 1"
 fi
 
 #[ tests, tests, tests ]-------------------------------------------------------#
