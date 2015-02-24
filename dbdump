@@ -14,7 +14,7 @@
 # Backup and purge script for MySQL.                                           #
 #                                                                              #
 # reimlima@gmail.com                                                           #
-# $Id: dbdump,v 2 2015/02/21 reimlima Exp reimlima $                           #
+# $Id: dbdump,v 2 2015/02/24 reimlima Exp reimlima $                           #
 #                                                                              #
 #[ License ]-------------------------------------------------------------------#
 #                                                                              #
@@ -74,6 +74,10 @@
 #                                                                              #
 # v1   - [02/20/2015]                                                          #
 # - First release. Only shows informations;                                    #
+# v2   - [02/23/2015]                                                          #
+# - Stable Version;                                                            #
+# v2.1 - [02/24/2015]                                                          #
+# - Added "--single-transaction" parameter for "non lock" entire database      #
 #                                                                              #
 #------------------------------------------------------------------------------#
 
@@ -143,7 +147,7 @@ dataDump(){
 	fi
 	echo "[ $($DATE +%m/%d/%Y\ %H:%M:%S) ] - $DUMPINFO" >> $DBDUMPLOG
 	[ $DEBUG -eq 1 ] && echo "[ $($DATE +%m/%d/%Y\ %H:%M:%S) ] - $DUMPINFO"
-	$MYSQLDUMP -u $DBUSER -p$DBPASSWORD $DBARRAY >> $DUMPPATH/$DUMPFILENAME.$DUMPDATE.sql
+	$MYSQLDUMP --single-transaction -u $DBUSER -p$DBPASSWORD $DBARRAY >> $DUMPPATH/$DUMPFILENAME.$DUMPDATE.sql
 	wait
 	$GZIP -9 $DUMPPATH/$DUMPFILENAME.$DUMPDATE.sql
 	return
