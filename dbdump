@@ -128,7 +128,7 @@ exiterrorfunc(){
 	EXITCODE=$(echo $@ | awk '{print $NF}')
 	EXITMESSAGE=$(echo $@ | awk '{ $NF = ""; print $0}')
 	[ $DEBUG -eq 1 ] && echo $EXITMESSAGE
-	echo $EXITMESSAGE >> $DBDUMPLOG
+	echo "[ $($DATE +%m/%d/%Y\ %H:%M:%S) ] - $EXITMESSAGE" >> $DBDUMPLOG
 	exit $EXITCODE
 	
 }
