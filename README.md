@@ -3,6 +3,15 @@ dbdump
 
 Backup and purge script for MySQL.
 
+
+Notice
+--------------------------------------------------------------------------------
+
+This script was tested and work well in:
+
+* Linux
+	GNU bash, version 4.1.2(1)-release (x86_64-redhat-linux-gnu)
+
 Changelog
 --------------------------------------------------------------------------------
 
