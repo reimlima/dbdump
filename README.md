@@ -6,7 +6,12 @@ Backup and purge script for MySQL.
 Changelog
 --------------------------------------------------------------------------------
 
-2015-02-21 - v1   - First Stable Release
+2015-02-21	- v2	- First Stable Release
+
+2015-02-24	- v2.1	- Added "--single-transaction" parameter for "non lock" entire database
+
+2015-02-26	- v2.2	- Removed unnecessary lock file
+			- Better comment about conf file
 
 How to use it
 --------------------------------------------------------------------------------

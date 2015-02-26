@@ -78,6 +78,9 @@
 # - Stable Version;                                                            #
 # v2.1 - [02/24/2015]                                                          #
 # - Added "--single-transaction" parameter for "non lock" entire database      #
+# v2.2 - [02/26/2015]                                                          #
+# - Removed unnecessary lock file                                              #
+# - Better comment about conf file                                             #
 #                                                                              #
 #------------------------------------------------------------------------------#
 
@@ -90,13 +93,10 @@ GZIP=$(which gzip)
 SCRIPTNAME=$(basename $0)
 MYSQLDUMP=$(which mysqldump)
 DUMPDATE=$($DATE '+%Y%m%d%H%M')
-
-# script files
-SCRIPTCONFFILE="dbdump.conf"
 LOCKFILE=/tmp/${SCRIPTNAME}.lock
-FIFOFILE=/tmp/${SCRIPTNAME}.fifo
 
-mkfifo $FIFOFILE &> /dev/null
+# script conf file. Set here the full path like "/etc/dbddump/dbdump.conf"
+SCRIPTCONFFILE="dbdump.conf"
 
 #[ Functions ]-----------------------------------------------------------------#
 
