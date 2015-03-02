@@ -10,7 +10,9 @@ Notice
 This script was tested and work well in:
 
 * Linux
-	GNU bash, version 4.1.2(1)-release (x86_64-redhat-linux-gnu)
+	OS Distribution: CentOS release 6.6 (Final)
+	Kernel: 2.6.32-504.3.3.el6.x86_64
+	GNU bash: version 4.1.2(1)-release (x86_64-redhat-linux-gnu)
 
 Changelog
 --------------------------------------------------------------------------------
