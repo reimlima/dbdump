@@ -170,11 +170,11 @@ executionFlow(){
 	
 	# Makes the script orchestration
 	
-	dataDump
-	[ $? -eq 0 ] || exiterrorfunc "Something went wrong with DB dump, check $DUMPPATH 1"
-	wait
 	dataPurge
 	[ $? -eq 0 ] || exiterrorfunc "Something went wrong with Data Purge, check $DUMPPATH 1"
+	wait
+	dataDump
+	[ $? -eq 0 ] || exiterrorfunc "Something went wrong with DB Dump, check $DUMPPATH 1"
 	exiterrorfunc "All Operations were done successfully 0"
 	
 }
