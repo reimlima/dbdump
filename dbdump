@@ -160,7 +160,7 @@ dataPurge(){
 	
 	echo "[ $($DATE +%m/%d/%Y\ %H:%M:%S) ] - Removing files older than $DUMPRETENTION day" >> $DBDUMPLOG
 	[ $DEBUG -eq 1 ] && echo "[ $($DATE +%m/%d/%Y\ %H:%M:%S) ] - Removing files older than $DUMPRETENTION day"
-	$FIND $DUMPPATH/*.gz -type f -mtime +$DUMPRETENTION  -exec rm -vf {} \;
+	$FIND $DUMPPATH/ -type f -mtime +$DUMPRETENTION  -exec rm -vf {} \;
 	return
 	
 }
