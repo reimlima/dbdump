@@ -14,7 +14,7 @@
 # Backup and purge script for MySQL.                                           #
 #                                                                              #
 # reimlima@gmail.com                                                           #
-# $Id: dbdump,v 2 2015/02/24 reimlima Exp reimlima $                           #
+# $Id: dbdump,v 2.3 2015/05/15 reimlima Exp reimlima $                         #
 #                                                                              #
 #[ License ]-------------------------------------------------------------------#
 #                                                                              #
@@ -72,15 +72,14 @@
 #                                                                              #
 #[ Changelog ]-----------------------------------------------------------------#
 #                                                                              #
-# v1   - [02/20/2015]                                                          #
-# - First release. Only shows informations;                                    #
-# v2   - [02/23/2015]                                                          #
-# - Stable Version;                                                            #
-# v2.1 - [02/24/2015]                                                          #
-# - Added "--single-transaction" parameter for "non lock" entire database      #
-# v2.2 - [02/26/2015]                                                          #
-# - Removed unnecessary lock file                                              #
-# - Better comment about conf file                                             #
+# v1   - [02/20/2015] - First release. Only shows informations                 #
+# v2   - [02/23/2015] - Stable Version                                         #
+# v2.1 - [02/24/2015] - Added "--single-transaction" parameter for "non lock"  #
+#                       entire database.                                       #
+# v2.2 - [02/26/2015] - Removed unnecessary lock file.                         #
+#                     - Better comment about conf file.                        #
+# v2.3 - [05/15/2015] - Added option to send dump file to a remote server via  #
+#                       rsync.                                                 #
 #                                                                              #
 #------------------------------------------------------------------------------#
 
@@ -166,6 +165,18 @@ dataPurge(){
 	
 }
 
+sendBackupGzipFile(){
+
+	# Send created dump file to a remote server via rsync
+
+	BACKUPFULLNAME="$DUMPFILENAME.$DUMPDATE.sql.gz"
+	echo "[ $($DATE +%m/%d/%Y\ %H:%M:%S) ] - sendind the backup file \"$BACKUPFULLNAME\" to the remote host: $SERVERBKP" >> $DBDUMPLOG
+	[ $DEBUG -eq 1 ] && echo "[ $($DATE +%m/%d/%Y\ %H:%M:%S) ] - sendind the backup file \"$BACKUPFULLNAME\" to the remote host: $SERVERBKP"
+	$RSYNC -tv $DUMPPATH/$BACKUPFULLNAME $SERVERBKPUSER@$SERVERBKP::$SERVERBKPPATH/ >> $DBDUMPLOG 2> /dev/null
+	return
+
+}
+
 executionFlow(){
 	
 	# Makes the script orchestration
@@ -175,6 +186,9 @@ executionFlow(){
 	wait
 	dataDump
 	[ $? -eq 0 ] || exiterrorfunc "Something went wrong with DB Dump, check $DUMPPATH 1"
+	wait
+	sendBackupGzipFile
+	[ $? -eq 0 ] || exiterrorfunc "Something went wrong, check if the backup server is available 1"
 	exiterrorfunc "All Operations were done successfully 0"
 	
 }

@@ -1,2 +1,2 @@
 # scheduling suggestion, everyday at 2AM
-0 2 * * *       root    bash /usr/local/bin/dbdump/dbdump
+#0 2 * * *       root    bash /usr/local/bin/dbdump/dbdump
