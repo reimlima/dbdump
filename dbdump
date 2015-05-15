@@ -89,6 +89,7 @@ DEBUG=0
 FIND=$(which find)
 DATE=$(which date)
 GZIP=$(which gzip)
+RSYNC=$(which rsync)
 SCRIPTNAME=$(basename $0)
 MYSQLDUMP=$(which mysqldump)
 DUMPDATE=$($DATE '+%Y%m%d%H%M')
