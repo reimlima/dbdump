@@ -97,7 +97,7 @@ MYSQLDUMP=$(which mysqldump)
 DUMPDATE=$($DATE '+%Y%m%d%H%M')
 LOCKFILE=/tmp/${SCRIPTNAME}.lock
 
-# script conf file. Set here the full path like "/etc/dbddump/dbdump.conf"
+# script conf file. Set here the full path like "/etc/dbdump/dbdump.conf"
 SCRIPTCONFFILE="/etc/dbdump/dbdump.conf"
 
 #[ Functions ]-----------------------------------------------------------------#
