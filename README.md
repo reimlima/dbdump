@@ -26,15 +26,20 @@ Changelog
 
 2015-05-15      - v2.3	- Added option to send dump file to a remote server via  rsync.
 
+2015-09-18      - v2.4	- Added option to save each database dump file separately.
+
 How to use it
 --------------------------------------------------------------------------------
 
 CONF FILE:
 
-Just  fill  the  configuration  file  with  the  values  for DBUSER, DBPASSWORD,
+Just fill the configuration file with the values for GRANULAR, DBUSER, DBPASSWORD,
 DBARRAY, DUMPFILENAME, DUMPPATH, DUMPRETENTION, DBDUMPLOG, then run the script.
 
 Legend:
+
+	GRANULAR:	Create several database files instead of a single file
+			 0 = "off", 1 = "on"
 
 	DBUSER:		MySQL Access Login
 	
@@ -62,6 +67,7 @@ Legend:
 
 Example:
 
+	GRANULAR="1"
 	DBUSER="root"
 	DBPASSWORD="pass1234"
 	DBARRAY="zabbix nagios cacti"

@@ -14,7 +14,7 @@
 # Backup and purge script for MySQL.                                           #
 #                                                                              #
 # reimlima@gmail.com                                                           #
-# $Id: dbdump,v 2.3 2015/05/15 reimlima Exp reimlima $                         #
+# $Id: dbdump,v 2.4 2015/09/18 reimlima Exp reimlima $                         #
 #                                                                              #
 #[ License ]-------------------------------------------------------------------#
 #                                                                              #
@@ -80,6 +80,8 @@
 #                     - Better comment about conf file.                        #
 # v2.3 - [05/15/2015] - Added option to send dump file to a remote server via  #
 #                       rsync.                                                 #
+# v2.4 - [09/18/2015] - Added   option   to  save  each  database  dump  file  #
+#                       separately.                                            #
 #                                                                              #
 #------------------------------------------------------------------------------#
 
@@ -96,7 +98,7 @@ DUMPDATE=$($DATE '+%Y%m%d%H%M')
 LOCKFILE=/tmp/${SCRIPTNAME}.lock
 
 # script conf file. Set here the full path like "/etc/dbddump/dbdump.conf"
-SCRIPTCONFFILE="dbdump.conf"
+SCRIPTCONFFILE="/etc/dbdump/dbdump.conf"
 
 #[ Functions ]-----------------------------------------------------------------#
 
@@ -142,14 +144,28 @@ dataDump(){
 		DUMPINFO="Executing backup of All Databases"
 		DBARRAY="--all-databases"
 	else
-		DUMPINFO="Executing backup of $DBARRAY Databases"
-		DBARRAY="--databases $DBARRAY"
+		if [[ $GRANULAR == "0" ]] ; then
+			DUMPINFO="Executing backup of $DBARRAY Databases"
+			DBARRAY="--databases $DBARRAY"
+		fi
 	fi
-	echo "[ $($DATE +%m/%d/%Y\ %H:%M:%S) ] - $DUMPINFO" >> $DBDUMPLOG
-	[ $DEBUG -eq 1 ] && echo "[ $($DATE +%m/%d/%Y\ %H:%M:%S) ] - $DUMPINFO"
-	$MYSQLDUMP --single-transaction -u $DBUSER -p$DBPASSWORD $DBARRAY >> $DUMPPATH/$DUMPFILENAME.$DUMPDATE.sql
-	wait
-	$GZIP -9 $DUMPPATH/$DUMPFILENAME.$DUMPDATE.sql
+
+
+	if [[ $GRANULAR == "0" ]] ; then
+		echo "[ $($DATE +%m/%d/%Y\ %H:%M:%S) ] - $DUMPINFO" >> $DBDUMPLOG
+		[ $DEBUG -eq 1 ] && echo "[ $($DATE +%m/%d/%Y\ %H:%M:%S) ] - $DUMPINFO"
+		$MYSQLDUMP --single-transaction -u $DBUSER -p$DBPASSWORD $DBARRAY >> $DUMPPATH/$DUMPFILENAME.$DUMPDATE.sql
+		wait
+		$GZIP -9 $DUMPPATH/$DUMPFILENAME.$DUMPDATE.sql
+	else
+		echo "[ $($DATE +%m/%d/%Y\ %H:%M:%S) ] - $DUMPINFO" >> $DBDUMPLOG
+		[ $DEBUG -eq 1 ] && echo "[ $($DATE +%m/%d/%Y\ %H:%M:%S) ] - $DUMPINFO"
+		for i in ${DBARRAY[@]}; do
+			$MYSQLDUMP --single-transaction -u $DBUSER -p$DBPASSWORD ${i} >> $DUMPPATH/$DUMPFILENAME.${i}.$DUMPDATE.sql
+			wait
+			$GZIP -9 $DUMPPATH/$DUMPFILENAME.${i}.$DUMPDATE.sql
+		done
+	fi
 	return
 	
 }
@@ -170,10 +186,19 @@ sendBackupGzipFile(){
 
 	# Send created dump file to a remote server via rsync
 
-	BACKUPFULLNAME="$DUMPFILENAME.$DUMPDATE.sql.gz"
-	echo "[ $($DATE +%m/%d/%Y\ %H:%M:%S) ] - sendind the backup file \"$BACKUPFULLNAME\" to the remote host: $SERVERBKP" >> $DBDUMPLOG
-	[ $DEBUG -eq 1 ] && echo "[ $($DATE +%m/%d/%Y\ %H:%M:%S) ] - sendind the backup file \"$BACKUPFULLNAME\" to the remote host: $SERVERBKP"
-	$RSYNC -tv $DUMPPATH/$BACKUPFULLNAME $SERVERBKPUSER@$SERVERBKP::$SERVERBKPPATH/ >> $DBDUMPLOG 2> /dev/null
+	if [[ $GRANULAR == "0" ]] ; then
+		BACKUPFULLNAME="$DUMPFILENAME.$DUMPDATE.sql.gz"
+		echo "[ $($DATE +%m/%d/%Y\ %H:%M:%S) ] - sendind the backup file \"$BACKUPFULLNAME\" to the remote host: $SERVERBKP" >> $DBDUMPLOG
+		[ $DEBUG -eq 1 ] && echo "[ $($DATE +%m/%d/%Y\ %H:%M:%S) ] - sendind the backup file \"$BACKUPFULLNAME\" to the remote host: $SERVERBKP"
+		$RSYNC -tv $DUMPPATH/$BACKUPFULLNAME $SERVERBKPUSER@$SERVERBKP::$SERVERBKPPATH/ >> $DBDUMPLOG 2> /dev/null
+	else
+		for i in ${DBARRAY[@]}; do
+			BACKUPFULLNAME="$DUMPFILENAME.${i}.$DUMPDATE.sql.gz"
+			echo "[ $($DATE +%m/%d/%Y\ %H:%M:%S) ] - sendind the backup file \"$BACKUPFULLNAME\" to the remote host: $SERVERBKP" >> $DBDUMPLOG
+			[ $DEBUG -eq 1 ] && echo "[ $($DATE +%m/%d/%Y\ %H:%M:%S) ] - sendind the backup file \"$BACKUPFULLNAME\" to the remote host: $SERVERBKP"
+			$RSYNC -tv $DUMPPATH/$BACKUPFULLNAME $SERVERBKPUSER@$SERVERBKP::$SERVERBKPPATH/ >> $DBDUMPLOG 2> /dev/null
+		done
+	fi
 	return
 
 }
